@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Timer, Play, Pause, RotateCcw, Moon, Sun, Clock } from 'lucide-react';
+import { Timer, Play, Pause, RotateCcw, Moon, Sun, Clock, List, Check as CheckIcon } from 'lucide-react';
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
@@ -12,11 +12,20 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/use-toast";
+
+interface Step {
+  time: number;
+  category: string;
+  description: string;
+  id: string;
+}
 
 const Recipe = () => {
-  const TOTAL_MINUTES = 45; // Maximum recipe time in minutes
+  const { toast } = useToast();
   
-  const steps = [
+  const defaultSteps = [
     { time: 45, category: 'Chicken', description: 'Pre-heat grill' },
     { time: 30, category: 'Chicken', description: 'Place hens skin side up directly over coals' },
     { time: 26, category: 'Gravy', description: 'Melt 4tbsp butter over medium-high heat' },
@@ -29,6 +38,12 @@ const Recipe = () => {
     { time: 0, category: 'Chicken', description: 'Carve' }
   ].map(step => ({ ...step, id: Math.random().toString(36).substr(2, 9) }));
 
+  const [steps, setSteps] = useState<Step[]>(defaultSteps);
+  const [showJsonDialog, setShowJsonDialog] = useState(false);
+  const [jsonInput, setJsonInput] = useState('');
+  const [jsonError, setJsonError] = useState('');
+  const TOTAL_MINUTES = Math.max(...steps.map(step => step.time));
+  
   const [timeRemaining, setTimeRemaining] = useState(TOTAL_MINUTES * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -196,9 +211,102 @@ const Recipe = () => {
     );
   };
 
+  const handleJsonEdit = () => {
+    // Remove IDs when showing JSON to user
+    const stepsWithoutIds = steps.map(({ id, ...step }) => step);
+    setJsonInput(JSON.stringify(stepsWithoutIds, null, 2));
+    setJsonError('');
+    setShowJsonDialog(true);
+  };
+
+  const handleJsonUpdate = () => {
+    try {
+      const parsedSteps = JSON.parse(jsonInput);
+      if (!Array.isArray(parsedSteps)) {
+        throw new Error('Input must be an array of steps');
+      }
+      
+      // Validate each step has required properties
+      parsedSteps.forEach((step, index) => {
+        if (typeof step.time !== 'number' || 
+            typeof step.category !== 'string' || 
+            typeof step.description !== 'string') {
+          throw new Error(`Step ${index + 1} is missing required properties`);
+        }
+      });
+
+      // Always generate new IDs for all steps
+      const updatedSteps = parsedSteps.map(step => ({
+        ...step,
+        id: Math.random().toString(36).substr(2, 9)
+      }));
+
+      setSteps(updatedSteps);
+      setShowJsonDialog(false);
+      setJsonError('');
+      
+      // Reset timer when steps are updated
+      resetTimer();
+
+      // Show success toast
+      toast({
+        title: "Recipe Updated",
+        description: `Successfully processed ${updatedSteps.length} steps`,
+      });
+    } catch (error) {
+      setJsonError(error.message);
+      // Show error toast
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message,
+      });
+    }
+  };
+
   return (
     <div className={`max-w-2xl mx-auto p-6 transition-colors duration-200 ${isDarkMode ? 'dark' : ''}`}>
       <Card className="bg-white dark:bg-gray-900 shadow-xl rounded-xl p-6 relative">
+        <div className="absolute left-4 top-4">
+          <Dialog open={showJsonDialog} onOpenChange={setShowJsonDialog}>
+            <DialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-gray-500 dark:text-gray-400"
+                onClick={handleJsonEdit}
+              >
+                <List className="h-5 w-5" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle>Edit Recipe Steps</DialogTitle>
+              </DialogHeader>
+              <div className="py-4">
+                <Textarea
+                  value={jsonInput}
+                  onChange={(e) => setJsonInput(e.target.value)}
+                  className="font-mono h-[400px] overflow-auto"
+                  placeholder="Paste your recipe JSON here..."
+                />
+                {jsonError && (
+                  <p className="text-red-500 text-sm mt-2">{jsonError}</p>
+                )}
+                <div className="flex justify-end gap-2 mt-4">
+                  <Button variant="outline" onClick={() => setShowJsonDialog(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleJsonUpdate}>
+                    <CheckIcon className="h-4 w-4 mr-2" />
+                    Update Recipe
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+
         <div className="absolute right-4 top-4 flex gap-2">
           <Dialog open={showTargetDialog} onOpenChange={setShowTargetDialog}>
             <DialogTrigger asChild>
