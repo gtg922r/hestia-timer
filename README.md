@@ -2,8 +2,7 @@
 
 A sleek and intuitive cooking timer application built with Next.js that helps you manage complex recipes with multiple steps and timing requirements. Perfect for coordinating multi-step cooking processes with precise timing.
 
-![Hestia Timer Interface](Example%20Screenshot.png)
-
+<img src="./doc/Example%20Screenshot.png" alt="Hestia Timer Interface" width="300"/>
 ## Features
 
 - ⏰ Smart countdown timer with target time synchronization
