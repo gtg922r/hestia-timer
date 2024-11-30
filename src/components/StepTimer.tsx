@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Timer, Play, Pause, RotateCcw, Moon, Sun, Clock, List, Check as CheckIcon } from 'lucide-react';
+import { Play, Pause, RotateCcw, Moon, Sun, Clock, List, Check as CheckIcon } from 'lucide-react';
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
@@ -47,9 +47,9 @@ const Recipe = () => {
   const [timeRemaining, setTimeRemaining] = useState(TOTAL_MINUTES * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [completedSteps, setCompletedSteps] = useState(new Set());
+  const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [targetTime, setTargetTime] = useState(null);
+  const [targetTime, setTargetTime] = useState<Date | null>(null);
   const [showTargetDialog, setShowTargetDialog] = useState(false);
 
   // Add effect to handle dark mode
@@ -68,15 +68,15 @@ const Recipe = () => {
       defaultTarget.setMinutes(defaultTarget.getMinutes() + TOTAL_MINUTES);
       setTargetTime(defaultTarget);
     }
-  }, []);
+  }, [targetTime, TOTAL_MINUTES]);
 
   useEffect(() => {
-    let timer;
+    let timer: NodeJS.Timeout | undefined;
     if (isRunning && timeRemaining > 0) {
       timer = setInterval(() => {
         if (targetTime) {
           const now = new Date();
-          const diffSeconds = Math.max(0, Math.floor((targetTime - now) / 1000));
+          const diffSeconds = Math.max(0, Math.floor((targetTime.getTime() - now.getTime()) / 1000));
           setTimeRemaining(diffSeconds);
         } else {
           setTimeRemaining(prev => Math.max(0, prev - 1));
@@ -86,7 +86,7 @@ const Recipe = () => {
     return () => clearInterval(timer);
   }, [isRunning, timeRemaining, targetTime]);
 
-  const handleTargetTimeChange = (timeString) => {
+  const handleTargetTimeChange = (timeString: string) => {
     const [hours, minutes] = timeString.split(':').map(Number);
     const newTarget = new Date();
     newTarget.setHours(hours, minutes, 0, 0);
@@ -98,11 +98,11 @@ const Recipe = () => {
     
     setTargetTime(newTarget);
     const now = new Date();
-    setTimeRemaining(Math.max(0, Math.floor((newTarget - now) / 1000)));
+    setTimeRemaining(Math.max(0, Math.floor((newTarget.getTime() - now.getTime()) / 1000)));
     setShowTargetDialog(false);
   };
 
-  const formatTimeInput = (date) => {
+  const formatTimeInput = (date: Date | null) => {
     if (!date) return '';
     return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
   };
@@ -117,7 +117,7 @@ const Recipe = () => {
     return currentIndex;
   };
 
-  const formatTime = (seconds) => {
+  const formatTime = (seconds: number) => {
     if (seconds <= 0) return 'Now!';
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -125,14 +125,13 @@ const Recipe = () => {
   };
 
   const currentStepIndex = getCurrentStep();
-  const previousStep = currentStepIndex > 0 ? steps[currentStepIndex - 1] : null;
   const currentStep = steps[currentStepIndex];
   const nextSteps = isExpanded 
     ? steps.slice(currentStepIndex + 1) 
     : steps.slice(currentStepIndex + 1, currentStepIndex + 4);
   const remainingStepsCount = Math.max(0, steps.length - (currentStepIndex + 4));
 
-  const getTimeUntilStep = (step) => {
+  const getTimeUntilStep = (step: Step | null) => {
     if (!step) return 0;
     const stepTimeInSeconds = step.time * 60;
     return Math.max(0, timeRemaining - stepTimeInSeconds);
@@ -146,7 +145,7 @@ const Recipe = () => {
     setIsRunning(false);
   };
 
-  const toggleStepCompletion = (stepId, event) => {
+  const toggleStepCompletion = (stepId: string, event?: React.MouseEvent) => {
     // Prevent the click from triggering the parent div's onClick
     if (event) {
       event.stopPropagation();
@@ -163,7 +162,7 @@ const Recipe = () => {
     });
   };
 
-  const renderStep = (step, type) => {
+  const renderStep = (step: Step | null, type: 'current' | 'previous' | 'next') => {
     if (!step) return null;
     const timeUntil = getTimeUntilStep(step);
     const isUpcoming = timeUntil > 0;
@@ -181,8 +180,8 @@ const Recipe = () => {
         <div className="flex items-center gap-3">
           <Checkbox 
             checked={isCompleted}
-            onCheckedChange={(checked) => toggleStepCompletion(step.id, event)}
-            onClick={(e) => e.stopPropagation()}
+            onCheckedChange={() => toggleStepCompletion(step.id)}
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
             className="h-5 w-5"
           />
           <div className="flex-1">
@@ -213,6 +212,7 @@ const Recipe = () => {
 
   const handleJsonEdit = () => {
     // Remove IDs when showing JSON to user
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const stepsWithoutIds = steps.map(({ id, ...step }) => step);
     setJsonInput(JSON.stringify(stepsWithoutIds, null, 2));
     setJsonError('');
@@ -253,13 +253,14 @@ const Recipe = () => {
         title: "Recipe Updated",
         description: `Successfully processed ${updatedSteps.length} steps`,
       });
-    } catch (error) {
-      setJsonError(error.message);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      setJsonError(errorMessage);
       // Show error toast
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message,
+        description: errorMessage,
       });
     }
   };
@@ -387,7 +388,7 @@ const Recipe = () => {
             </Button>
           )}
           
-          {isExpanded && currentStepIndex > 0 && steps.slice(0, currentStepIndex).map((step, index) => (
+          {isExpanded && currentStepIndex > 0 && steps.slice(0, currentStepIndex).map((step) => (
             <div 
               key={step.id}
               style={{ opacity: 0.5 }}
