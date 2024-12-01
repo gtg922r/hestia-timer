@@ -52,6 +52,33 @@ The application is built around a main `Recipe` component that handles:
 - Completion status
 - Target time calculations
 
+## Recipe Format
+
+Recipes can be imported using a JSON format with the following structure:
+
+```json
+[
+  {
+    "time": 45,
+    "category": "Chicken",
+    "description": "Pre-heat grill"
+  },
+  {
+    "time":40,
+    "category": "Gravy",
+    "description": "Melt 4tbsp butter over medium-high heat"
+  }
+]
+```
+
+### Recipe Step Properties
+
+- `time` (number): Minutes from the end when this step should occur (e.g., 45 means this step happens 45 minutes before completion)
+- `category` (string): Category grouping for the step, used for color-coding
+- `description` (string): The instruction text for this step
+
+Steps are automatically sorted by time in descending order, with the earliest steps (highest time value) appearing first.
+
 ## License
 
 MIT
