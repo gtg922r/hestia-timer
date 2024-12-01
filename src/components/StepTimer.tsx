@@ -1,9 +1,9 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Play, Pause, RotateCcw, Moon, Sun, Clock, List, Check as CheckIcon } from 'lucide-react';
+import { Play, Pause, RotateCcw, Moon, Sun, Clock, List, Check as CheckIcon, Bell, BellOff } from 'lucide-react';
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
@@ -46,8 +46,64 @@ const CATEGORY_COLORS = {
   ]
 };
 
+// Custom hook for sound notifications
+const useStepSound = () => {
+  const { toast } = useToast();
+  const [soundEnabled, setSoundEnabled] = useState(false);
+  
+  const playSound = useCallback(() => {
+    if (soundEnabled) {
+      const audio = new Audio('/notification.ogg');
+      audio.volume = 1.0;
+      audio.play().catch(error => {
+        console.error('Sound play failed:', error);
+        toast({
+          variant: "destructive",
+          title: "Sound Error",
+          description: "Could not play notification sound.",
+        });
+      });
+    }
+  }, [soundEnabled, toast]);
+
+  const toggleSound = useCallback(async () => {
+    if (!soundEnabled) {
+      try {
+        // Test audio playback
+        const audio = new Audio('/notification.ogg');
+        await audio.play();
+        audio.pause();
+        audio.currentTime = 0;
+        
+        setSoundEnabled(true);
+        toast({
+          title: "Sound Enabled",
+          description: "You will now hear alerts when steps change.",
+        });
+      } catch (error) {
+        console.error('Error enabling sound:', error);
+        toast({
+          variant: "destructive",
+          title: "Sound Error",
+          description: "Could not enable sound notifications. Please check browser permissions.",
+        });
+        setSoundEnabled(false);
+      }
+    } else {
+      setSoundEnabled(false);
+      toast({
+        title: "Sound Disabled",
+        description: "Step alerts will be silent.",
+      });
+    }
+  }, [soundEnabled, toast]);
+
+  return { soundEnabled, playSound, toggleSound };
+};
+
 const Recipe = () => {
   const { toast } = useToast();
+  const { soundEnabled, playSound, toggleSound } = useStepSound();
   
   const defaultSteps = [
     { time: 45, category: 'Chicken', description: 'Pre-heat grill' },
@@ -120,21 +176,38 @@ const Recipe = () => {
     }
   }, [targetTime, TOTAL_MINUTES]);
 
+  // Simplify timer effect
   useEffect(() => {
     let timer: NodeJS.Timeout | undefined;
+    let lastTimeInSeconds = timeRemaining;
+
     if (isRunning && timeRemaining > 0) {
       timer = setInterval(() => {
-        if (targetTime) {
-          const now = new Date();
-          const diffSeconds = Math.max(0, Math.floor((targetTime.getTime() - now.getTime()) / 1000));
-          setTimeRemaining(diffSeconds);
-        } else {
-          setTimeRemaining(prev => Math.max(0, prev - 1));
-        }
+        const newTimeInSeconds = targetTime
+          ? Math.max(0, Math.floor((targetTime.getTime() - new Date().getTime()) / 1000))
+          : Math.max(0, timeRemaining - 1);
+        
+        setTimeRemaining(newTimeInSeconds);
+
+        // Check for step triggers
+        const lastTimeMinutes = lastTimeInSeconds / 60;
+        const newTimeMinutes = newTimeInSeconds / 60;
+
+        steps.forEach(step => {
+          if (lastTimeMinutes > step.time && newTimeMinutes <= step.time) {
+            playSound();
+            toast({
+              title: "New Step Starting",
+              description: step.description,
+            });
+          }
+        });
+
+        lastTimeInSeconds = newTimeInSeconds;
       }, 1000);
     }
     return () => clearInterval(timer);
-  }, [isRunning, timeRemaining, targetTime]);
+  }, [isRunning, timeRemaining, targetTime, steps, playSound, toast]);
 
   const handleTargetTimeChange = (timeString: string) => {
     const [hours, minutes] = timeString.split(':').map(Number);
@@ -319,7 +392,7 @@ const Recipe = () => {
   return (
     <div className={`max-w-2xl mx-auto p-6 transition-colors duration-200 ${isDarkMode ? 'dark' : ''}`}>
       <Card className="bg-white dark:bg-gray-900 shadow-xl rounded-xl p-6 relative">
-        <div className="absolute left-4 top-4">
+        <div className="absolute left-4 top-4 flex gap-2">
           <Dialog open={showJsonDialog} onOpenChange={setShowJsonDialog}>
             <DialogTrigger asChild>
               <Button
@@ -357,9 +430,7 @@ const Recipe = () => {
               </div>
             </DialogContent>
           </Dialog>
-        </div>
 
-        <div className="absolute right-4 top-4 flex gap-2">
           <Dialog open={showTargetDialog} onOpenChange={setShowTargetDialog}>
             <DialogTrigger asChild>
               <Button
@@ -387,6 +458,21 @@ const Recipe = () => {
               </div>
             </DialogContent>
           </Dialog>
+        </div>
+
+        <div className="absolute right-4 top-4 flex gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleSound}
+            className="text-gray-500 dark:text-gray-400"
+          >
+            {soundEnabled ? (
+              <Bell className="h-5 w-5" />
+            ) : (
+              <BellOff className="h-5 w-5" />
+            )}
+          </Button>
           
           <Button
             variant="ghost"
