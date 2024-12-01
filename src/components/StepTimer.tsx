@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
@@ -407,6 +408,9 @@ const Recipe = () => {
             <DialogContent className="sm:max-w-[600px]">
               <DialogHeader>
                 <DialogTitle>Edit Recipe Steps</DialogTitle>
+                <DialogDescription>
+                  Modify your recipe steps in JSON format. Each step should have a time (in minutes), category, and description.
+                </DialogDescription>
               </DialogHeader>
               <div className="py-4">
                 <Textarea
@@ -444,6 +448,9 @@ const Recipe = () => {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Set Target Completion Time</DialogTitle>
+                <DialogDescription>
+                  Choose when you want the recipe to be completed. The timer will adjust accordingly.
+                </DialogDescription>
               </DialogHeader>
               <div className="py-4">
                 <Input
