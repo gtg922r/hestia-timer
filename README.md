@@ -12,6 +12,7 @@ A sleek and intuitive cooking timer application built with Next.js that helps yo
 - 🎨 Category-based step coloring
 - 🔄 Dynamic step progression with time-based opacity
 - 🌓 Dark/Light mode theme switching
+- 🔔 Optional sound notifications for step changes
 - ⚡ Real-time step updates and remaining time calculations
 - 📱 Responsive card-based UI design
 
@@ -22,6 +23,7 @@ A sleek and intuitive cooking timer application built with Next.js that helps yo
 - **UI Components**: Custom components with shadcn/ui
 - **Icons**: Lucide React icons
 - **State Management**: React hooks (useState, useEffect)
+- **Audio**: Web Audio API for step notifications
 
 ## Getting Started
 
