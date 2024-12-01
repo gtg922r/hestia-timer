@@ -51,34 +51,66 @@ const CATEGORY_COLORS = {
 const useStepSound = () => {
   const { toast } = useToast();
   const [soundEnabled, setSoundEnabled] = useState(false);
-  
-  // Use the basePath from Next.js config via NODE_ENV
+  const [audio, setAudio] = useState<AudioContext | null>(null);
   const basePath = process.env.NODE_ENV === 'production' ? '/hestia-timer' : '';
-  
-  const playSound = useCallback(() => {
-    if (soundEnabled) {
-      const audio = new Audio(`${basePath}/notification.ogg`);
-      audio.volume = 1.0;
-      audio.play().catch(error => {
-        console.error('Sound play failed:', error);
-        toast({
-          variant: "destructive",
-          title: "Sound Error",
-          description: "Could not play notification sound.",
-        });
+
+  // Initialize audio
+  const initializeAudio = useCallback(async () => {
+    try {
+      const context = new (window.AudioContext || ((window as any).webkitAudioContext as typeof AudioContext))();
+      setAudio(context);
+      return context;
+    } catch (error) {
+      console.error('Error initializing audio:', error);
+      return null;
+    }
+  }, []);
+
+  // Play the sound
+  const playSound = useCallback(async () => {
+    if (!soundEnabled) return;
+
+    try {
+      // Get or create audio context
+      const context = audio || await initializeAudio();
+      if (!context) return;
+
+      // Resume if suspended (iOS requirement)
+      if (context.state === 'suspended') {
+        await context.resume();
+      }
+
+      // Fetch and play sound
+      const response = await fetch(`${basePath}/notification.wav`);
+      const arrayBuffer = await response.arrayBuffer();
+      const audioBuffer = await context.decodeAudioData(arrayBuffer);
+      
+      const source = context.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(context.destination);
+      source.start(0);
+    } catch (error) {
+      console.error('Error playing sound:', error);
+      toast({
+        variant: "destructive",
+        title: "Sound Error",
+        description: "Could not play notification sound.",
       });
     }
-  }, [soundEnabled, toast, basePath]);
+  }, [soundEnabled, audio, initializeAudio, basePath, toast]);
 
+  // Toggle sound on/off
   const toggleSound = useCallback(async () => {
     if (!soundEnabled) {
       try {
-        // Test audio playback
-        const audio = new Audio(`${basePath}/notification.ogg`);
-        await audio.play();
-        audio.pause();
-        audio.currentTime = 0;
-        
+        const context = audio || await initializeAudio();
+        if (!context) throw new Error('Could not initialize audio');
+
+        // iOS requires user interaction to start audio context
+        if (context.state === 'suspended') {
+          await context.resume();
+        }
+
         setSoundEnabled(true);
         toast({
           title: "Sound Enabled",
@@ -89,7 +121,7 @@ const useStepSound = () => {
         toast({
           variant: "destructive",
           title: "Sound Error",
-          description: "Could not enable sound notifications. Please check browser permissions.",
+          description: "Could not enable sound notifications.",
         });
         setSoundEnabled(false);
       }
@@ -100,7 +132,14 @@ const useStepSound = () => {
         description: "Step alerts will be silent.",
       });
     }
-  }, [soundEnabled, toast, basePath]);
+  }, [soundEnabled, audio, initializeAudio, toast]);
+
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      if (audio) audio.close();
+    };
+  }, [audio]);
 
   return { soundEnabled, playSound, toggleSound };
 };

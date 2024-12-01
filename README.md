@@ -81,6 +81,21 @@ Recipes can be imported using a JSON format with the following structure:
 
 Steps are automatically sorted by time in descending order, with the earliest steps (highest time value) appearing first.
 
+## Sound Notifications
+
+The timer includes an optional sound notification system that:
+- Plays a gentle alert sound when each new step begins
+- Can be toggled on/off using the bell icon in the top right
+- Requires user interaction before playing (browser security requirement)
+- Works across all modern browsers
+- Automatically adjusts to your system volume
+
+Sound notifications are disabled by default and must be explicitly enabled by clicking the bell icon. Due to browser security policies, sound will only play after the user has interacted with the page.
+
+## Credits
+
+Notification sound from [akx/Notifications](https://github.com/akx/Notifications) under dual license (CC Attribution 3.0 Unported or CC0 Public Domain).
+
 ## License
 
 MIT
