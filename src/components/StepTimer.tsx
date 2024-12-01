@@ -77,6 +77,21 @@ const Recipe = () => {
   const [showTargetDialog, setShowTargetDialog] = useState(false);
   const [categoryColorMap, setCategoryColorMap] = useState<Map<string, number>>(new Map());
 
+  // Initialize dark mode from system preference
+  useEffect(() => {
+    // Check if the system prefers dark mode
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    setIsDarkMode(mediaQuery.matches);
+
+    // Listen for system theme changes
+    const handleChange = (e: MediaQueryListEvent) => {
+      setIsDarkMode(e.matches);
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
   // Update category color mapping when steps change
   useEffect(() => {
     const uniqueCategories = Array.from(new Set(steps.map(step => step.category)));
