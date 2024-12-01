@@ -47,6 +47,10 @@ const CATEGORY_COLORS = {
   ]
 };
 
+interface WebkitWindow extends Window {
+  webkitAudioContext?: typeof AudioContext;
+}
+
 // Custom hook for sound notifications
 const useStepSound = () => {
   const { toast } = useToast();
@@ -57,7 +61,8 @@ const useStepSound = () => {
   // Initialize audio
   const initializeAudio = useCallback(async () => {
     try {
-      const context = new (window.AudioContext || ((window as any).webkitAudioContext as typeof AudioContext))();
+      const AudioContextClass = window.AudioContext || (window as WebkitWindow).webkitAudioContext;
+      const context = new (AudioContextClass as typeof AudioContext)();
       setAudio(context);
       return context;
     } catch (error) {
