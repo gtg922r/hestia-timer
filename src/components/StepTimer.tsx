@@ -22,6 +22,30 @@ interface Step {
   id: string;
 }
 
+// Add color palette and category color mapping
+const CATEGORY_COLORS = {
+  light: [
+    'text-red-600',
+    'text-blue-600',
+    'text-green-600',
+    'text-purple-600',
+    'text-orange-600',
+    'text-teal-600',
+    'text-pink-600',
+    'text-indigo-600',
+  ],
+  dark: [
+    'dark:text-red-400',
+    'dark:text-blue-400',
+    'dark:text-green-400',
+    'dark:text-purple-400',
+    'dark:text-orange-400',
+    'dark:text-teal-400',
+    'dark:text-pink-400',
+    'dark:text-indigo-400',
+  ]
+};
+
 const Recipe = () => {
   const { toast } = useToast();
   
@@ -51,6 +75,17 @@ const Recipe = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [targetTime, setTargetTime] = useState<Date | null>(null);
   const [showTargetDialog, setShowTargetDialog] = useState(false);
+  const [categoryColorMap, setCategoryColorMap] = useState<Map<string, number>>(new Map());
+
+  // Update category color mapping when steps change
+  useEffect(() => {
+    const uniqueCategories = Array.from(new Set(steps.map(step => step.category)));
+    const newColorMap = new Map();
+    uniqueCategories.forEach((category, index) => {
+      newColorMap.set(category, index % CATEGORY_COLORS.light.length);
+    });
+    setCategoryColorMap(newColorMap);
+  }, [steps]);
 
   // Add effect to handle dark mode
   useEffect(() => {
@@ -162,6 +197,11 @@ const Recipe = () => {
     });
   };
 
+  const getCategoryColorClasses = (category: string) => {
+    const colorIndex = categoryColorMap.get(category) ?? 0;
+    return `${CATEGORY_COLORS.light[colorIndex]} ${CATEGORY_COLORS.dark[colorIndex]}`;
+  };
+
   const renderStep = (step: Step | null, type: 'current' | 'previous' | 'next') => {
     if (!step) return null;
     const timeUntil = getTimeUntilStep(step);
@@ -186,11 +226,7 @@ const Recipe = () => {
           />
           <div className="flex-1">
             <div className="flex justify-between items-center mb-2">
-              <span className={`text-sm font-semibold ${
-                step.category === 'Chicken' 
-                  ? 'text-red-600 dark:text-red-400' 
-                  : 'text-green-600 dark:text-green-400'
-              }`}>
+              <span className={`text-sm font-semibold ${getCategoryColorClasses(step.category)}`}>
                 {step.category}
               </span>
               <span className={`text-sm font-mono ${
