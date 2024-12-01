@@ -4,8 +4,8 @@ const nextConfig = {
     images: {
         unoptimized: true,
     },
-    basePath: '/hestia-timer',
-    assetPrefix: '/hestia-timer/',
+    basePath: process.env.NODE_ENV === 'production' ? '/hestia-timer' : '',
+    assetPrefix: process.env.NODE_ENV === 'production' ? '/hestia-timer/' : '',
     webpack: (config) => {
         config.module.rules.push({
             test: /\.(woff|woff2|eot|ttf|otf)$/i,
