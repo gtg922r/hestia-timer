@@ -52,9 +52,12 @@ const useStepSound = () => {
   const { toast } = useToast();
   const [soundEnabled, setSoundEnabled] = useState(false);
   
+  // Use the basePath from Next.js config via NODE_ENV
+  const basePath = process.env.NODE_ENV === 'production' ? '/hestia-timer' : '';
+  
   const playSound = useCallback(() => {
     if (soundEnabled) {
-      const audio = new Audio('/notification.ogg');
+      const audio = new Audio(`${basePath}/notification.ogg`);
       audio.volume = 1.0;
       audio.play().catch(error => {
         console.error('Sound play failed:', error);
@@ -65,13 +68,13 @@ const useStepSound = () => {
         });
       });
     }
-  }, [soundEnabled, toast]);
+  }, [soundEnabled, toast, basePath]);
 
   const toggleSound = useCallback(async () => {
     if (!soundEnabled) {
       try {
         // Test audio playback
-        const audio = new Audio('/notification.ogg');
+        const audio = new Audio(`${basePath}/notification.ogg`);
         await audio.play();
         audio.pause();
         audio.currentTime = 0;
@@ -97,7 +100,7 @@ const useStepSound = () => {
         description: "Step alerts will be silent.",
       });
     }
-  }, [soundEnabled, toast]);
+  }, [soundEnabled, toast, basePath]);
 
   return { soundEnabled, playSound, toggleSound };
 };
