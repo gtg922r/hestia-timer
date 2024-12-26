@@ -130,6 +130,7 @@ export function LLMPromptBuilder() {
     const prompt = [
       promptTemplate,
       "",
+      "## Recipe List",
       "Here are the recipes to convert:",
       "",
       ...entries.map(entry => [
