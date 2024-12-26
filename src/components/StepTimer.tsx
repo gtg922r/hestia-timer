@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
+import { LLMPromptBuilder } from './LLMPromptBuilder';
 
 interface Step {
   time: number;
@@ -512,6 +513,8 @@ const Recipe = () => {
               </div>
             </DialogContent>
           </Dialog>
+
+          <LLMPromptBuilder />
         </div>
 
         <div className="absolute right-4 top-4 flex gap-2">

@@ -15,6 +15,7 @@ A sleek and intuitive cooking timer application built with Next.js that helps yo
 - 🔔 Optional sound notifications for step changes
 - ⚡ Real-time step updates and remaining time calculations
 - 📱 Responsive card-based UI design
+- ✨ LLM Prompt Builder for converting text recipes to JSON format
 
 ## Technical Stack
 
@@ -47,12 +48,23 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## Component Structure
 
-The application is built around a main `Recipe` component that handles:
+The application is built around two main components:
+
+### Recipe Component
+Handles core timer functionality:
 - Timer state management
 - Step progression tracking
 - Theme switching
 - Completion status
 - Target time calculations
+
+### LLM Prompt Builder Component
+Helps convert text recipes to JSON format:
+- Accessible via the sparkle (✨) icon
+- Add and manage multiple recipe entries
+- Edit prompt template for LLM instructions
+- Copy formatted prompt to clipboard
+- Expandable recipe previews with smooth animations
 
 ## Recipe Format
 
@@ -80,6 +92,24 @@ Recipes can be imported using a JSON format with the following structure:
 - `description` (string): The instruction text for this step
 
 Steps are automatically sorted by time in descending order, with the earliest steps (highest time value) appearing first.
+
+## Converting Text Recipes
+
+The LLM Prompt Builder helps convert text-based recipes into the required JSON format:
+
+1. Click the sparkle (✨) icon in the top-left corner
+2. Add one or more recipes with titles and content
+3. (Optional) Customize the prompt template
+4. Click "Copy Prompt to Clipboard"
+5. Paste the prompt into your preferred LLM
+6. Copy the resulting JSON into the app's JSON editor
+
+The prompt builder includes:
+- Markdown formatting support
+- Expandable recipe previews
+- Edit and delete functionality
+- Dark mode support
+- Toast notifications for user feedback
 
 ## Sound Notifications
 
