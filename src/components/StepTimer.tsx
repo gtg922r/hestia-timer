@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Play, Pause, RotateCcw, Moon, Sun, Clock, List, Check as CheckIcon, Bell, BellOff } from 'lucide-react';
+import { Play, Pause, RotateCcw, Moon, Sun, Clock, List, Check as CheckIcon, Bell, BellOff, Menu, Settings } from 'lucide-react';
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
@@ -16,6 +16,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { LLMPromptBuilder } from './LLMPromptBuilder';
+import { CollapsibleIconBar } from './CollapsibleIconBar';
 
 interface Step {
   time: number;
@@ -442,106 +443,110 @@ const Recipe = () => {
     <div className={`max-w-2xl mx-auto p-6 transition-colors duration-200 ${isDarkMode ? 'dark' : ''}`}>
       <Card className="bg-white dark:bg-gray-900 shadow-xl rounded-xl p-6 relative">
         <div className="absolute left-4 top-4 flex gap-2">
-          <Dialog open={showJsonDialog} onOpenChange={setShowJsonDialog}>
-            <DialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-gray-500 dark:text-gray-400"
-                onClick={handleJsonEdit}
-              >
-                <List className="h-5 w-5" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
-              <DialogHeader>
-                <DialogTitle>Edit Recipe Steps</DialogTitle>
-                <DialogDescription>
-                  Modify your recipe steps in JSON format. Each step should have a time (in minutes), category, and description.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="py-4">
-                <Textarea
-                  value={jsonInput}
-                  onChange={(e) => setJsonInput(e.target.value)}
-                  className="font-mono h-[400px] overflow-auto"
-                  placeholder="Paste your recipe JSON here..."
-                />
-                {jsonError && (
-                  <p className="text-red-500 text-sm mt-2">{jsonError}</p>
-                )}
-                <div className="flex justify-end gap-2 mt-4">
-                  <Button variant="outline" onClick={() => setShowJsonDialog(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleJsonUpdate}>
-                    <CheckIcon className="h-4 w-4 mr-2" />
-                    Update Recipe
-                  </Button>
+          <CollapsibleIconBar icon={Menu}>
+            <Dialog open={showJsonDialog} onOpenChange={setShowJsonDialog}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-gray-500 dark:text-gray-400"
+                  onClick={handleJsonEdit}
+                >
+                  <List className="h-5 w-5" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[600px]">
+                <DialogHeader>
+                  <DialogTitle>Edit Recipe Steps</DialogTitle>
+                  <DialogDescription>
+                    Modify your recipe steps in JSON format. Each step should have a time (in minutes), category, and description.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="py-4">
+                  <Textarea
+                    value={jsonInput}
+                    onChange={(e) => setJsonInput(e.target.value)}
+                    className="font-mono h-[400px] overflow-auto"
+                    placeholder="Paste your recipe JSON here..."
+                  />
+                  {jsonError && (
+                    <p className="text-red-500 text-sm mt-2">{jsonError}</p>
+                  )}
+                  <div className="flex justify-end gap-2 mt-4">
+                    <Button variant="outline" onClick={() => setShowJsonDialog(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={handleJsonUpdate}>
+                      <CheckIcon className="h-4 w-4 mr-2" />
+                      Update Recipe
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogContent>
+            </Dialog>
 
-          <Dialog open={showTargetDialog} onOpenChange={setShowTargetDialog}>
-            <DialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-gray-500 dark:text-gray-400"
-              >
-                <Clock className="h-5 w-5" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Set Target Completion Time</DialogTitle>
-                <DialogDescription>
-                  Choose when you want the recipe to be completed. The timer will adjust accordingly.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="py-4">
-                <Input
-                  type="time"
-                  defaultValue={formatTimeInput(targetTime)}
-                  onChange={(e) => handleTargetTimeChange(e.target.value)}
-                  className="w-full"
-                />
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                  Target completion time: {targetTime?.toLocaleTimeString()}
-                </p>
-              </div>
-            </DialogContent>
-          </Dialog>
+            <Dialog open={showTargetDialog} onOpenChange={setShowTargetDialog}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-gray-500 dark:text-gray-400"
+                >
+                  <Clock className="h-5 w-5" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Set Target Completion Time</DialogTitle>
+                  <DialogDescription>
+                    Choose when you want the recipe to be completed. The timer will adjust accordingly.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="py-4">
+                  <Input
+                    type="time"
+                    defaultValue={formatTimeInput(targetTime)}
+                    onChange={(e) => handleTargetTimeChange(e.target.value)}
+                    className="w-full"
+                  />
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    Target completion time: {targetTime?.toLocaleTimeString()}
+                  </p>
+                </div>
+              </DialogContent>
+            </Dialog>
 
-          <LLMPromptBuilder />
+            <LLMPromptBuilder />
+          </CollapsibleIconBar>
         </div>
 
         <div className="absolute right-4 top-4 flex gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleSound}
-            className="text-gray-500 dark:text-gray-400"
-          >
-            {soundEnabled ? (
-              <Bell className="h-5 w-5" />
-            ) : (
-              <BellOff className="h-5 w-5" />
-            )}
-          </Button>
-          
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsDarkMode(!isDarkMode)}
-          >
-            {isDarkMode ? (
-              <Sun className="h-5 w-5 text-yellow-500" />
-            ) : (
-              <Moon className="h-5 w-5 text-gray-500" />
-            )}
-          </Button>
+          <CollapsibleIconBar icon={Settings}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleSound}
+              className="text-gray-500 dark:text-gray-400"
+            >
+              {soundEnabled ? (
+                <Bell className="h-5 w-5" />
+              ) : (
+                <BellOff className="h-5 w-5" />
+              )}
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsDarkMode(!isDarkMode)}
+            >
+              {isDarkMode ? (
+                <Sun className="h-5 w-5 text-yellow-500" />
+              ) : (
+                <Moon className="h-5 w-5 text-gray-500" />
+              )}
+            </Button>
+          </CollapsibleIconBar>
         </div>
 
         <div className="text-center mb-8">
