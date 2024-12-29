@@ -1,6 +1,11 @@
 # <img src="./doc/hestia timer.png" alt="Hestia Timer Interface" height="30"/> Hestia Timer
 Hosted on Github Pages at [Hestia Timer](https://gtg922r.github.io/hestia-timer/)
-<img align="right" src="./doc/Example%20Screenshot.png" alt="Hestia Timer Interface" width="300"/>
+
+<picture>
+  <source srcset="./doc/Example%20Screenshot%20-%20dark.png" media="(prefers-color-scheme: dark)">
+  <source srcset="./doc/Example%20Screenshot%20-%20light.png" media="(prefers-color-scheme: light)">
+  <img align="right" src="./doc/Example%20Screenshot%20-%20light.png" alt="Screenshot of the app" width="350"/>
+</picture>
 
 A sleek and intuitive cooking timer application built with Next.js that helps you manage complex recipes with multiple steps and timing requirements. Perfect for coordinating multi-step cooking processes with precise timing.
 
